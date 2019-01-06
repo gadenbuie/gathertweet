@@ -17,14 +17,15 @@ save_tweets <- function(
   if (fs::file_exists(file)) {
     # Don't drop or lose old tweets
     tweets_prev <- read_fun(file, lck = lck)
-    status_not_new <- setdiff(tweets_prev$status_id, tweets$status_id)
-    if (length(status_not_new)) {
-      tweets <- rbind(
-        tweets,
-        tweets_prev[tweets_prev$status_id %in% status_not_new, ]
-      )
+    if (!is.null(tweets_prev)) {
+      tweets_not_new <- anti_join(tweets_prev, tweets, by = "status_id")
+      if (nrow(tweets_not_new)) {
+        tweets <- bind_rows(tweets, tweets_not_new)
+      }
+      if (length(setdiff(tweets_prev$status_id, tweets$status_id)) == 0) {
+        log_fatal("An error occurred that would have lost stored tweets")
+      }
     }
-    stopifnot(length(setdiff(tweets_prev$status_id, tweets$status_id)) == 0)
   }
 
   save_fun(tweets, file)
@@ -118,7 +119,7 @@ lookup_status_ratelimit <- function(status_id, ...) {
       idx_end <- n_status
       log_info("Getting {n_status} tweets")
     }
-    tweets <- rbind(
+    tweets <- bind_rows(
       tweets,
       rtweet::lookup_statuses(status_id[idx_start:idx_end])
     )
