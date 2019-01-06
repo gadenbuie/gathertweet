@@ -22,7 +22,7 @@ save_tweets <- function(
       if (nrow(tweets_not_new)) {
         tweets <- bind_rows(tweets, tweets_not_new)
       }
-      if (length(setdiff(tweets_prev$status_id, tweets$status_id)) == 0) {
+      if (length(setdiff(tweets_prev$status_id, tweets$status_id)) != 0) {
         log_fatal("An error occurred that would have lost stored tweets")
       }
     }
