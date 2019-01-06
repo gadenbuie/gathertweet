@@ -1,0 +1,28 @@
+Package: gathertweet
+Title: Gather Tweets from the Command Line with rtweet
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Garrick",
+           family = "Aden-Buie",
+           role = c("aut", "cre"),
+           email = "garrick@adenbuie.com")
+Description: A command line utility for common tweet gathering
+    tasks. Leverages the rtweet package for cron-friendly,
+    boilerplate-free tweet collection. Currently in progress and only
+    suitable for small search-based tweet collection projects.
+License: MIT + file LICENSE
+Imports:
+    digest,
+    docopt,
+    filelock,
+    fs,
+    futile.logger,
+    here,
+    magrittr,
+    rlang,
+    rtweet,
+    tibble
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1

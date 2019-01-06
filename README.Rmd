@@ -1,0 +1,57 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "",
+  prompt = TRUE,
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# gathertweet
+
+The goal of gathertweet is to provide a simple command line utility that wraps key functions from [rtweet].
+
+__gathertweet__ removes the boilerplate code required to run periodic Twitter searches and plays well with cron.
+
+## Installation
+
+This is a work in progress and may not work well for you yet.
+But you are welcome to install **gathertweet** and try it out.
+
+```r
+# install.packages("remotes")
+remotes::install_github("gadenbuie/gathertweet")
+```
+
+Once you've installed the package, you need to run
+
+```r
+gathertweet::install_gathertweet()
+```
+
+which adds `gathertweet` to `/usr/local/bin` as a symlink (you can adjust were this link is created).
+
+## Example
+
+```bash
+# Get 100 #rstats tweets
+gathertweet search --n 100 --quiet "#rtats"
+
+# Get more tweets, automatically starting from end of the last search
+gathertweet search --n 100 --quiet "#rstats"
+
+# Update the stored data about those #rstats tweets
+gathertweet update
+```
+
+## Documentation
+
+```{bash}
+gathertweet --help
+```
