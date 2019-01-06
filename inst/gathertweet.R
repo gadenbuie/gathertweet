@@ -5,7 +5,7 @@
 
 Usage:
   gathertweet search [--file=<file>] [options] [--] <terms>...
-  gathertweet update [--file=<file> --token=<token> --backup --polite --debug-args]
+  gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
 
 Arguments
   <terms>  Search terms. Individual search terms are queried separately,
@@ -32,7 +32,7 @@ Options:
   --quiet               Disable printing of {rtweet} processing/retrieval messages
   --polite              Only allow one process (search|update) to run at a time
   --backup              Create a backup of existing tweet file before writing any new files
-  --backup-dir <backup_dir>  Location for backups, use "" for current directory. [default: backups]
+  --backup-dir <dir>    Location for backups, use "" for current directory. [default: backups]
   --debug-args          Print values of the arguments only
 ' -> doc
 
@@ -95,7 +95,7 @@ if (isTRUE(args$search)) {
   tweets <- tweets[!duplicated(tweets$status_id), ]
 
   log_info("Gathered {nrow(tweets)} tweets")
-  if (args$backup) backup_tweets(args$file, backup_dir = args$backup_dir)
+  if (args$backup) backup_tweets(args$file, backup_dir = args[["backup-dir"]])
   tweets <- save_tweets(tweets, args$file)
 
   log_info("Total of {nrow(tweets)} tweets in {args$file}")
@@ -110,7 +110,7 @@ if (isTRUE(args$search)) {
     token = args$token
   )
   log_debug("Status lookup returned {nrow(tweets)} tweets")
-  if (args$backup) backup_tweets(args$file, backup_dir = args$backup_dir)
+  if (args$backup) backup_tweets(args$file, backup_dir = args[["backup-dir"]])
   tweets <- save_tweets(tweets, args$file)
   log_debug("Total of {nrow(tweets)} tweets in {args$file}")
   log_info("Tweet update complete")
