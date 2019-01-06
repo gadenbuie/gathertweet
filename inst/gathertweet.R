@@ -98,7 +98,12 @@ if (isTRUE(args$search)) {
 # Update ------------------------------------------------------------------
 } else if (isTRUE(args$update)) {
   logger("Updating tweets in {args$file}")
-  tweets <- update_tweets(file = args$file)
+  tweets <- update_tweets(
+    file = args$file,
+    # passed to rtweet::lookup_statuses()
+    parse = !args[["no-parse"]],
+    token = args$token
+  )
   log_debug("Status lookup returned {nrow(tweets)} tweets")
   if (args$backup) backup_tweets(args$file)
   tweets <- save_tweets(tweets, args$file)

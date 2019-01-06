@@ -121,7 +121,7 @@ lookup_status_ratelimit <- function(status_id, ...) {
     }
     tweets <- bind_rows(
       tweets,
-      rtweet::lookup_statuses(status_id[idx_start:idx_end])
+      rtweet::lookup_statuses(status_id[idx_start:idx_end], ...)
     )
   }
 
