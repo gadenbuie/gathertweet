@@ -10,6 +10,10 @@ Usage:
 Arguments
   <terms>  Search terms. Individual search terms are queried separately,
            but duplicated tweets are removed from the stored results.
+           Each search term counts against the 15 minute rate limit of 180
+           searches, which can be avoided by manually joining search terms
+           into a single query. WARNING: Wrap queries with spaces in
+           \'single quotes\': double quotes are allowed inside single quotes only.
 
 Options:
   -h --help             Show this screen.
