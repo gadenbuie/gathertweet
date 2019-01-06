@@ -63,6 +63,7 @@ read_tweets <- function(
 #' @export
 backup_tweets <- function(
   file = getOption("gathertweet.file", "tweets.rds"),
+  backup_dir = "backups",
   lck = NULL
 ) {
   if (!file_exists(file)) return()
@@ -71,7 +72,9 @@ backup_tweets <- function(
     on.exit(unlock(lck))
   }
   stopifnot_locked(lck, message = "Unable to acquire lock on {file}")
-  file_backup <- path_add(file)
+  file_backup <- path(fs::path_dir(file), backup_dir, fs::path_file(file))
+  file_backup <- path_add(file_backup)
+  fs::dir_create(fs::path_dir(file_backup))
   log_info("Backing up tweet file to {file_backup}")
   fs::file_copy(file, file_backup)
 }
