@@ -47,15 +47,17 @@ if (args$`--debug-args`) {
 }
 
 library(gathertweet)
+action <- names(Filter(isTRUE, args[c("search", "update")]))
 
 if (args$polite) {
   lockfile <- paste0(".gathertweet_",
                      digest::digest(args[c("file", "search", "update")]),
                      ".lock")
   lck <- filelock::lock(lockfile, exclusive = TRUE, timeout = 0)
-  action <- names(Filter(isTRUE, args[c("search", "update")]))
   gathertweet:::stopifnot_locked(lck, "Another gathertweet {action} process is currently running for {args$file}")
 }
+
+log_info("---- gathertweet {action} start ----")
 
 # Search ------------------------------------------------------------------
 if (isTRUE(args$search)) {
@@ -113,7 +115,6 @@ if (isTRUE(args$search)) {
   if (args$backup) backup_tweets(args$file, backup_dir = args[["backup-dir"]])
   tweets <- save_tweets(tweets, args$file)
   log_debug("Total of {nrow(tweets)} tweets in {args$file}")
-  log_info("Tweet update complete")
 
 }
 
@@ -121,3 +122,5 @@ if (args$polite) {
   filelock::unlock(lck)
   unlink(lockfile)
 }
+
+log_info("---- gathertweet {action} complete ----")
