@@ -44,7 +44,7 @@ instructions_run_gathertweet <- function(location) {
     warning = function(w) ""
   )
   if (which_gathertweet == "") {
-    log_warn("gathertweet may not be installed in a location visible to your system path")
+    log_warn("{location} may not be in your system's PATH")
     log_warn("You may need to fully specify `{location}/gathertweet` to run gathertweet")
   } else {
     log_info("You can now call gathertweet from the command line")
