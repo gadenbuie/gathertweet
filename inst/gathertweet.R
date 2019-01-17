@@ -25,7 +25,7 @@ Options:
   --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
   --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
                         automatically extracted from the existing tweets <file>, if it exists, and
-                        ignored when <max_id> is set. [default: last]
+                        ignored when <max_id> is set. "none" for all available tweets. [default: last]
   --no-parse            Disable parsing of the results
   --token <token>       See {rtweet} for more information
   --retryonratelimit    Wait and retry when rate limited (only relevant when n exceeds 18000 tweets)
@@ -69,6 +69,8 @@ if (isTRUE(args$search)) {
   since_id <- if (is.null(max_id)) {
     if (since_id == "last") {
       last_seen_tweet(file = args$file)
+    } else if (since_id == "none") {
+      NULL
     } else since_id
   }
   if (!is.null(since_id)) log_info("Tweets from {since_id}")
