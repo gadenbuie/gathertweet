@@ -76,19 +76,24 @@ if (isTRUE(args$search)) {
   if (!is.null(since_id)) log_info("Tweets from {since_id}")
   if (!is.null(max_id)) log_info("Tweets up to {max_id}")
 
-  tweets <- rtweet::search_tweets2(
-    q = args$terms,
-    n = as.integer(args$n),
-    type = args$type,
-    include_rts = args$include_rts,
-    geocode = args$geocode,
-    max_id = max_id,
-    parse = !args[["no-parse"]],
-    token = args$token,
-    retryonratelimit = args$retryonratelimit,
-    verbose = !args$quiet,
-    since_id = since_id
+  tweets <- lapply(
+    args$term,
+    function(term) rtweet::search_tweets(
+      q = term,
+      n = as.integer(args$n),
+      type = args$type,
+      include_rts = args$include_rts,
+      geocode = args$geocode,
+      max_id = max_id,
+      parse = !args[["no-parse"]],
+      token = args$token,
+      retryonratelimit = args$retryonratelimit,
+      verbose = !args$quiet,
+      since_id = since_id
+    )
   )
+
+  tweets <- dplyr::bind_rows(tweets)
 
   if (nrow(tweets) == 0) {
     log_info("No new tweets.")
