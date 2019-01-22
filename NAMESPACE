@@ -2,6 +2,7 @@
 
 export("%>%")
 export(backup_tweets)
+export(get_user_info)
 export(install_gathertweet)
 export(last_seen_tweet)
 export(log_debug)
