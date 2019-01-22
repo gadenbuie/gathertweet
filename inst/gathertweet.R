@@ -6,6 +6,7 @@
 Usage:
   gathertweet search [--file=<file>] [options] [--] <terms>...
   gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
+  gathertweet simplify [--file=<file> --output=<output> --debug-args --polite <fields>...]
 
 Arguments
   <terms>  Search terms. Individual search terms are queried separately,
@@ -15,17 +16,15 @@ Arguments
            into a single query. WARNING: Wrap queries with spaces in
            \'single quotes\': double quotes are allowed inside single quotes only.
 
+  <fields>  Tweet fields that should be included. Default value will include
+            `status_id`, `created_at`, `user_id`, `screen_name`, `text`,
+            `favorite_count`, `retweet_count`, `is_quote`, `hashtags`,
+            `mentions_screen_name`, `profile_url`, `profile_image_url`,
+            `media_url`, `urls_url`, `urls_expanded_url`.
+
 Options:
   -h --help             Show this screen.
   --file=<file>         Name of RDS file where tweets are stored [default: tweets.rds]
-  -n, --n <n>           Number of tweets to return [default: 18000]
-  --type <type>         Type of search results: "recent", "mixed", or "popular". [default: recent]
-  --include_rts         Logical indicating whether retweets should be included
-  --geocode <geocode>   Geographical limiter of the template "latitude,longitude,radius"
-  --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
-  --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
-                        automatically extracted from the existing tweets <file>, if it exists, and
-                        ignored when <max_id> is set. "none" for all available tweets. [default: last]
   --no-parse            Disable parsing of the results
   --token <token>       See {rtweet} for more information
   --retryonratelimit    Wait and retry when rate limited (only relevant when n exceeds 18000 tweets)
@@ -34,6 +33,20 @@ Options:
   --backup              Create a backup of existing tweet file before writing any new files
   --backup-dir <dir>    Location for backups, use "" for current directory. [default: backups]
   --debug-args          Print values of the arguments only
+
+search:
+  -n, --n <n>           Number of tweets to return [default: 18000]
+  --type <type>         Type of search results: "recent", "mixed", or "popular". [default: recent]
+  --include_rts         Logical indicating whether retweets should be included
+  --geocode <geocode>   Geographical limiter of the template "latitude,longitude,radius"
+  --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
+  --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
+                        automatically extracted from the existing tweets <file>, if it exists, and
+                        ignored when <max_id> is set. "none" for all available tweets. [default: last]
+  --and-simplify        Create additional simplified tweet set with default values.
+                        Run `gathertweet simplify` manually for more control.
+simplify:
+  --output=<output>     Output file, default is input file with `_simplified` appended to name.
 ' -> doc
 
 library(docopt)
@@ -47,11 +60,11 @@ if (args$`--debug-args`) {
 }
 
 library(gathertweet)
-action <- names(Filter(isTRUE, args[c("search", "update")]))
+action <- names(Filter(isTRUE, args[c("search", "update", "simplify")]))
 
 if (args$polite) {
   lockfile <- paste0(".gathertweet_",
-                     digest::digest(args[c("file", "search", "update")]),
+                     digest::digest(args[c("file", "search", "update", "simplify")]),
                      ".lock")
   lck <- filelock::lock(lockfile, exclusive = TRUE, timeout = 0)
   gathertweet:::stopifnot_locked(lck, "Another gathertweet {action} process is currently running for {args$file}")
@@ -61,6 +74,7 @@ log_info("---- gathertweet {action} start ----")
 
 # Search ------------------------------------------------------------------
 if (isTRUE(args$search)) {
+  if (args[["--and-simplify"]]) args$simplify <- TRUE
 
   log_info("Searching for \"{paste0(args$terms, collapse = '\", \"')}\"")
 
@@ -123,6 +137,23 @@ if (isTRUE(args$search)) {
   tweets <- save_tweets(tweets, args$file)
   log_debug("Total of {nrow(tweets)} tweets in {args$file}")
 
+}
+
+
+# Simplify ----------------------------------------------------------------
+if (isTRUE(args$simplify)) {
+  logger("Simplifying tweets in {args$file}")
+  tweets_simplified <- simplify_tweets(
+    tweets = NULL,
+    file = args$file,
+    .fields = args$fields
+  )
+  log_debug("Simplified {nrow(tweets_simplified)} tweets")
+  if (is.null(args$output)) {
+    args$output <- gathertweet:::path_add(args$file, append = "_simplified")
+  }
+  log_info("Saving simplified tweets to {args$output}")
+  tweets_simplfied <- save_tweets(tweets_simplified, args$output)
 }
 
 if (args$polite) {

@@ -4,7 +4,8 @@ save_tweets <- function(
   file = getOption("gathertweet.file", "tweets.rds"),
   save_fun = saveRDS,
   read_fun = read_tweets,
-  lck = NULL
+  lck = NULL,
+  key_var = "status_id"
 ) {
   if (nrow(tweets) < 1) return(tweets)
   fs::dir_create(fs::path_dir(file))
@@ -18,11 +19,11 @@ save_tweets <- function(
     # Don't drop or lose old tweets
     tweets_prev <- read_fun(file, lck = lck)
     if (!is.null(tweets_prev)) {
-      tweets_not_new <- anti_join(tweets_prev, tweets, by = "status_id")
+      tweets_not_new <- anti_join(tweets_prev, tweets, by = key_var)
       if (nrow(tweets_not_new)) {
         tweets <- bind_rows(tweets, tweets_not_new)
       }
-      if (length(setdiff(tweets_prev$status_id, tweets$status_id)) != 0) {
+      if (length(setdiff(tweets_prev[[key_var]], tweets[[key_var]])) != 0) {
         log_fatal("An error occurred that would have lost stored tweets")
       }
     }
@@ -77,6 +78,40 @@ backup_tweets <- function(
   fs::dir_create(fs::path_dir(file_backup))
   log_info("Backing up tweet file to {file_backup}")
   fs::file_copy(file, file_backup)
+}
+
+#' @export
+simplify_tweets <- function(
+  tweets = NULL,
+  file = getOption("gathertweet.file", "tweets.rds"),
+  ...,
+  .fields = NULL
+) {
+  if (is.null(tweets)) tweets <- read_tweets(file)
+  if (is.null(tweets)) return(NULL)
+  .fields <- c(list(...), .fields)
+  if (length(.fields)) {
+    tweets %>% dplyr::select(!!!.fields)
+  } else {
+    dplyr::select(
+      tweets,
+      created_at,
+      status_id,
+      user_id,
+      screen_name,
+      text,
+      favorite_count,
+      retweet_count,
+      hashtags,
+      profile_url,
+      profile_image_url,
+      urls_expanded_url,
+      mentions_screen_name,
+      is_quote,
+      media_url,
+      urls_url
+    )
+  }
 }
 
 #' @export
@@ -157,4 +192,48 @@ shared_lock <- function(file, timeout = 1 * 60 * 1000) {
 
 exclusive_lock <- function(file, timeout = 1 * 60 * 1000) {
   lock(path_lock(file), exclusive = TRUE, timeout = timeout)
+}
+
+#' @title Get user info
+#' @param file The file where tweets are located. The text `_users` is
+#'   automatically appended to this file name.
+#' @export
+get_user_info <- function(
+  tweets = NULL,
+  file = getOption("gathertweet.file", "tweets.rds"),
+  dir_profile_images = NULL
+) {
+  if (is.null(tweets)) read_tweets(file)
+  user_file <- path_add(file, append = "_users")
+  users <- tweets %>%
+    rtweet::users_data() %>%
+    dplyr::distinct()
+
+  users <- save_tweets(users, user_file, key_var = "user_id")
+
+  if (!is.null(dir_profile_images)) {
+    rs <- lapply(users$profile_image_url, download_profile_images, output_dir = dir_profile_images)
+  }
+
+  return(users)
+}
+
+download_profile_images <- function(profile_image_url, ..., output_dir = "data") {
+  output_file <- sub("^.+?profile", "profile", profile_image_url)
+  output_file <- fs::path(output_dir, output_file)
+  fs::dir_create(fs::path_dir(output_file), recursive = TRUE)
+  download_file(profile_image_url, output_file)
+}
+
+download_file <- function(url, dest) {
+  if (fs::file_exists(dest)) return(dest)
+  x <- list(result = NULL, error = NULL)
+  x$result <- tryCatch({
+    download.file(url, dest)
+    dest
+  }, error = function(e) x$error <<- e$message)
+
+  if (!is.null(x$error)) {
+    log_warn("Error downloading {dest}: {x$error}")
+  } else x$result
 }
