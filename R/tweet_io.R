@@ -81,6 +81,40 @@ backup_tweets <- function(
 }
 
 #' @export
+simplify_tweets <- function(
+  tweets = NULL,
+  file = getOption("gathertweet.file", "tweets.rds"),
+  ...,
+  .fields = NULL
+) {
+  if (is.null(tweets)) tweets <- read_tweets(file)
+  if (is.null(tweets)) return(NULL)
+  .fields <- c(list(...), .fields)
+  if (length(.fields)) {
+    tweets %>% dplyr::select(!!!.fields)
+  } else {
+    dplyr::select(
+      tweets,
+      created_at,
+      status_id,
+      user_id,
+      screen_name,
+      text,
+      favorite_count,
+      retweet_count,
+      hashtags,
+      profile_url,
+      profile_image_url,
+      urls_expanded_url,
+      mentions_screen_name,
+      is_quote,
+      media_url,
+      urls_url
+    )
+  }
+}
+
+#' @export
 update_tweets <- function(
   tweets = NULL,
   file = getOption("tweets.file", "tweets.rds"),
@@ -202,3 +236,4 @@ download_file <- function(url, dest) {
   if (!is.null(x$error)) {
     log_warn("Error downloading {dest}: {x$error}")
   } else x$result
+}
