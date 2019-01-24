@@ -3,6 +3,7 @@
 .Rhistory
 .RData
 .DS_Store
+.tmp
 
 # Directories that start with _
 _*/

@@ -12,12 +12,18 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+if (dir.exists(".tmp")) unlink(".tmp", recursive = TRUE)
+dir.create(".tmp/rstats", recursive = TRUE, showWarnings = FALSE)
+knitr::opts_knit$set(root.dir = ".tmp/rstats")
 ```
+
+[rtweet]: https://rtweet.info
+
 # gathertweet
 
 The goal of gathertweet is to provide a simple command line utility that wraps key functions from [rtweet].
 
-__gathertweet__ removes the boilerplate code required to run periodic Twitter searches and plays well with cron.
+The magic of **gathertweet** is that it grants you the power to **quickly set up twitter monitoring and tweet gathering** while saving you from the pain of **writing a bunch of boilerplate code to save new tweets without losing previously collected tweets, join multiple searches, update tweet stats, simplify stored tweets, and more**.
 
 ## Installation
 
@@ -35,23 +41,58 @@ Once you've installed the package, you need to run
 gathertweet::install_gathertweet()
 ```
 
-which adds `gathertweet` to `/usr/local/bin` as a symlink (you can adjust were this link is created).
+which adds `gathertweet` to `/usr/local/bin` as a symlink (you can adjust where this link is created in `install_gathertweet()`).
+If you need admin rights to install, try `sudo Rscript -e "gathertweet::install_gathertweet()` from the command line.
 
 ## Example
 
+Create a directory to store tweets
+
 ```bash
-# Get 100 #rstats tweets
-gathertweet search --n 100 --quiet "#rtats"
+mkdir rstats
+cd rstats
+```
 
-# Get more tweets, automatically starting from end of the last search
+```{r include=FALSE}
+knitr::opts_knit$set(root.dir = ".tmp/rstats")
+```
+
+Get 100 #rstats tweets
+
+```{bash}
 gathertweet search --n 100 --quiet "#rstats"
+```
 
-# Update the stored data about those #rstats tweets
+Get more tweets, automatically starting from end of the last search
+
+```{r include=FALSE}
+Sys.sleep(60)
+```
+
+```{bash}
+gathertweet search --n 100 --quiet "#rstats"
+```
+
+Update the stored data about those #rstats tweets
+
+```{bash}
 gathertweet update
+```
+
+```{bash}
+ls -lh
 ```
 
 ## Documentation
 
-```{bash}
-gathertweet --help
+```{bash gathertweet_help, echo=FALSE, eval=FALSE}
+../../inst/gathertweet.R --help
+```
+
+```bash
+> gathertweet --help
+```
+
+```{bash gathertweet_help-out, echo=FALSE}
+<<gathertweet_help>>
 ```
