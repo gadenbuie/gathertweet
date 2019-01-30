@@ -6,7 +6,7 @@
 Usage:
   gathertweet search [--file=<file>] [options] [--] <terms>...
   gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
-  gathertweet simplify [--file=<file> --output=<output> --debug-args --polite <fields>...]
+  gathertweet simplify [--file=<file> --output=<output> --debug-args --polite] [<fields>...]
 
 Arguments
   <terms>  Search terms. Individual search terms are queried separately,
@@ -24,7 +24,7 @@ Arguments
 
 Options:
   -h --help             Show this screen.
-  --file=<file>         Name of RDS file where tweets are stored [default: tweets.rds]
+  --file <file>         Name of RDS file where tweets are stored [default: tweets.rds]
   --no-parse            Disable parsing of the results
   --token <token>       See {rtweet} for more information
   --retryonratelimit    Wait and retry when rate limited (only relevant when n exceeds 18000 tweets)
@@ -46,7 +46,7 @@ search:
   --and-simplify        Create additional simplified tweet set with default values.
                         Run `gathertweet simplify` manually for more control.
 simplify:
-  --output=<output>     Output file, default is input file with `_simplified` appended to name.
+  --output <output>     Output file, default is input file with `_simplified` appended to name.
 ' -> doc
 
 library(docopt)
