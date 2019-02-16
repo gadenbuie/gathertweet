@@ -100,6 +100,8 @@ simplify_tweets <- function(
       user_id,
       screen_name,
       text,
+      is_quote,
+      is_retweet,
       favorite_count,
       retweet_count,
       hashtags,
@@ -107,9 +109,15 @@ simplify_tweets <- function(
       profile_image_url,
       urls_expanded_url,
       mentions_screen_name,
-      is_quote,
       media_url,
-      urls_url
+      urls_url,
+      ext_media_url,
+      status_url,
+      dplyr::starts_with("reply_to_"),
+      quoted_status_id,
+      retweet_status_id,
+      quoted_status_id,
+      dplyr::starts_with("mentions_"),
     )
   }
 }
