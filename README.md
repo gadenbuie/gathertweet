@@ -46,39 +46,39 @@ Get 100 \#rstats tweets
 
 ``` bash
 > gathertweet search --n 100 --quiet "#rstats"
-[2019-01-24 14:17:19] [INFO] ---- gathertweet search start ----
-[2019-01-24 14:17:19] [INFO] Searching for "#rstats"
-[2019-01-24 14:17:20] [INFO] Gathered 96 tweets
-[2019-01-24 14:17:20] [INFO] Total of 96 tweets in tweets.rds
-[2019-01-24 14:17:20] [INFO] ---- gathertweet search complete ----
+[2019-01-29 21:54:37] [INFO] ---- gathertweet search start ----
+[2019-01-29 21:54:37] [INFO] Searching for "#rstats"
+[2019-01-29 21:54:37] [INFO] Gathered 100 tweets
+[2019-01-29 21:54:38] [INFO] Total of 100 tweets in tweets.rds
+[2019-01-29 21:54:38] [INFO] ---- gathertweet search complete ----
 ```
 
 Get more tweets, automatically starting from end of the last search
 
 ``` bash
 > gathertweet search --n 100 --quiet "#rstats"
-[2019-01-24 14:18:21] [INFO] ---- gathertweet search start ----
-[2019-01-24 14:18:21] [INFO] Searching for "#rstats"
-[2019-01-24 14:18:21] [INFO] Tweets from 1088513093242679296
-[2019-01-24 14:18:21] [INFO] Gathered 1 tweets
-[2019-01-24 14:18:21] [INFO] Total of 96 tweets in tweets.rds
-[2019-01-24 14:18:21] [INFO] ---- gathertweet search complete ----
+[2019-01-29 21:55:39] [INFO] ---- gathertweet search start ----
+[2019-01-29 21:55:39] [INFO] Searching for "#rstats"
+[2019-01-29 21:55:39] [INFO] Tweets from 1090438050835038208
+[2019-01-29 21:55:39] [INFO] Gathered 1 tweets
+[2019-01-29 21:55:39] [INFO] Total of 100 tweets in tweets.rds
+[2019-01-29 21:55:39] [INFO] ---- gathertweet search complete ----
 ```
 
 Update the stored data about those \#rstats tweets
 
 ``` bash
 > gathertweet update
-[2019-01-24 14:18:22] [INFO] ---- gathertweet update start ----
-[2019-01-24 14:18:22] [INFO] Updating tweets in tweets.rds
-[2019-01-24 14:18:22] [INFO] Getting 96 tweets
-[2019-01-24 14:18:23] [INFO] ---- gathertweet update complete ----
+[2019-01-29 21:55:40] [INFO] ---- gathertweet update start ----
+[2019-01-29 21:55:40] [INFO] Updating tweets in tweets.rds
+[2019-01-29 21:55:40] [INFO] Getting 100 tweets
+[2019-01-29 21:55:41] [INFO] ---- gathertweet update complete ----
 ```
 
 ``` bash
 > ls -lh
 total 40K
--rw-rw-r-- 1 garrick garrick 39K Jan 24 14:18 tweets.rds
+-rw-rw-r-- 1 garrick garrick 40K Jan 29 21:55 tweets.rds
 ```
 
 ## Documentation
@@ -92,7 +92,7 @@ total 40K
     Usage:
       gathertweet search [--file=<file>] [options] [--] <terms>...
       gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
-      gathertweet simplify [--file=<file> --output=<output> --debug-args --polite <fields>...]
+      gathertweet simplify [--file=<file> --output=<output> --debug-args --polite] [<fields>...]
     
     Arguments
       <terms>  Search terms. Individual search terms are queried separately,
@@ -110,7 +110,7 @@ total 40K
     
     Options:
       -h --help             Show this screen.
-      --file=<file>         Name of RDS file where tweets are stored [default: tweets.rds]
+      --file <file>         Name of RDS file where tweets are stored [default: tweets.rds]
       --no-parse            Disable parsing of the results
       --token <token>       See {rtweet} for more information
       --retryonratelimit    Wait and retry when rate limited (only relevant when n exceeds 18000 tweets)
@@ -132,4 +132,4 @@ total 40K
       --and-simplify        Create additional simplified tweet set with default values.
                             Run `gathertweet simplify` manually for more control.
     simplify:
-      --output=<output>     Output file, default is input file with `_simplified` appended to name.
+      --output <output>     Output file, default is input file with `_simplified` appended to name.
