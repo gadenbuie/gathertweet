@@ -7,6 +7,7 @@ output: github_document
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  cache = TRUE,
   comment = "",
   prompt = TRUE,
   fig.path = "man/figures/README-",
@@ -18,12 +19,27 @@ knitr::opts_knit$set(root.dir = ".tmp/rstats")
 ```
 
 [rtweet]: https://rtweet.info
+[cron]: https://en.wikipedia.org/wiki/Cron
 
-# gathertweet
+<h1 style="font-weight: normal;">gathe<strong>rtweet</strong></h1>
 
 The goal of gathertweet is to provide a simple command line utility that wraps key functions from [rtweet].
 
-The magic of **gathertweet** is that it grants you the power to **quickly set up twitter monitoring and tweet gathering** while saving you from the pain of **writing a bunch of boilerplate code to save new tweets without losing previously collected tweets, join multiple searches, update tweet stats, simplify stored tweets, and more**.
+The magic of **gathertweet** is that it grants you the power to **quickly set up twitter monitoring and tweet gathering** while saving you from the pain of **writing a bunch of boilerplate code** to 
+
+- save new tweets without losing previously collected tweets, 
+- join multiple searches, 
+- update tweet stats, 
+- simplify stored tweets,
+- schedule easily with [cron],
+- and more...
+
+gathe**rtweet** is a thin wrapper around [rtweet], the excellent R interface to Twitter written by [Mike Kearney](https://mikewk.com/).
+If you use gathertweet, please ensure that you [cite rtweet directly](https://rtweet.info/authors.html).
+
+```{r}
+citation("rtweet")
+```
 
 ## Installation
 
@@ -42,9 +58,16 @@ gathertweet::install_gathertweet()
 ```
 
 which adds `gathertweet` to `/usr/local/bin` as a symlink (you can adjust where this link is created in `install_gathertweet()`).
-If you need admin rights to install, try `sudo Rscript -e "gathertweet::install_gathertweet()` from the command line.
+If you need admin rights to install, try 
+```
+sudo Rscript -e "gathertweet::install_gathertweet()"
+``` 
+from the command line.
+
 
 ## Example
+
+### Use gathertweet from the command line
 
 Create a directory to store tweets
 
