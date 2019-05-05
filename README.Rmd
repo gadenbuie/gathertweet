@@ -83,16 +83,31 @@ gathertweet update
 ls -lh
 ```
 
-## Documentation
+Gather user timelines
 
-```{bash gathertweet_help, echo=FALSE, eval=FALSE}
-../../inst/gathertweet.R --help
+```{bash}
+gathertweet timeline hadleywickham jennybryan dataandme
 ```
+
+### Schedule tweet gathering using cron
+
+The primary use case of gathertweet is to make it easy to set up [cron] to periodically gather tweets.
+Here's a simple example to download all tweets matching the search term `rstats OR tidyverse` every night at midnight.
+The tweets are stored, by default, in `tweets.rds` in `~/rstats-tweets`.
+
+```bash
+crontab -e
+
+# m h dom mon dow   command
+0 0 * * * (cd ~/rstats-tweets && ~/bin/gathertweet search --polite 'rstats OR tidyverse' >>gathertweet.log)
+```
+
+## Documentation
 
 ```bash
 > gathertweet --help
 ```
 
-```{bash gathertweet_help-out, echo=FALSE}
-<<gathertweet_help>>
+```{bash gathertweet_help, echo=FALSE}
+../../inst/gathertweet.R --help
 ```

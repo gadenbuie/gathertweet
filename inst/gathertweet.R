@@ -5,6 +5,7 @@
 
 Usage:
   gathertweet search [--file=<file>] [options] [--] <terms>...
+  gathertweet timeline [options] [--] <users>...
   gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
   gathertweet simplify [--file=<file> --output=<output> --debug-args --polite] [<fields>...]
 
@@ -33,18 +34,25 @@ Options:
   --backup              Create a backup of existing tweet file before writing any new files
   --backup-dir <dir>    Location for backups, use "" for current directory. [default: backups]
   --debug-args          Print values of the arguments only
-
-search:
-  -n, --n <n>           Number of tweets to return [default: 18000]
-  --type <type>         Type of search results: "recent", "mixed", or "popular". [default: recent]
-  --include_rts         Logical indicating whether retweets should be included
-  --geocode <geocode>   Geographical limiter of the template "latitude,longitude,radius"
-  --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
-  --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
-                        automatically extracted from the existing tweets <file>, if it exists, and
-                        ignored when <max_id> is set. "none" for all available tweets. [default: last]
   --and-simplify        Create additional simplified tweet set with default values.
                         Run `gathertweet simplify` manually for more control.
+
+search and timeline:
+  -n, --n <n>           Number of tweets to return [default: 18000]
+  --include_rts         Logical indicating whether retweets should be included
+  --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
+
+search:
+  --type <type>         Type of search results: "recent", "mixed", or "popular". [default: recent]
+  --geocode <geocode>   Geographical limiter of the template "latitude,longitude,radius"
+  --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
+                        automatically extracted from the existing tweets <file>, if it exists, and
+                        ignored when <max_id> is set. Use "none" for all available tweets,
+                        or "last" for the maximum seen status_id in existing tweets. [default: last]
+
+timeline:
+  --home                If included, returns home-timeline instead of user-timeline.
+
 simplify:
   --output <output>     Output file, default is input file with `_simplified` appended to name.
 ' -> doc
@@ -60,7 +68,14 @@ if (args$`--debug-args`) {
 }
 
 library(gathertweet)
-action <- names(Filter(isTRUE, args[c("search", "update", "simplify")]))
+collapse <- function(..., sep = ", ") paste(..., collapse = sep)
+
+# Which action was called?
+valid_actions <- c("search", "update", "simplify", "timeline")
+action <- names(Filter(isTRUE, args[valid_actions]))
+if (!length(action)) {
+  log_fatal("Please specify a valid action: {collapse(valid_actions)}")
+}
 
 if (args$polite) {
   lockfile <- paste0(".gathertweet_",
@@ -114,8 +129,8 @@ if (isTRUE(args$search)) {
     exit()
   }
 
-  tweets <- tweets[order(tweets$status_id), ]
   tweets <- tweets[!duplicated(tweets$status_id), ]
+  tweets <- tweets[order(tweets$status_id), ]
 
   log_info("Gathered {nrow(tweets)} tweets")
   if (args$backup) backup_tweets(args$file, backup_dir = args[["backup-dir"]])
@@ -137,6 +152,33 @@ if (isTRUE(args$search)) {
   tweets <- save_tweets(tweets, args$file)
   log_debug("Total of {nrow(tweets)} tweets in {args$file}")
 
+} else if (isTRUE(args$timeline)) {
+  if (!length(args$users)) {
+    stop("Please provide a list of users as user names, user IDs, or a mixture of both.")
+  }
+
+  log_info("Gathering tweets by {collapse(args$users)}")
+  if (args[["--and-simplify"]]) args$simplify <- TRUE
+
+  tweets <- rtweet::get_timeline(
+    user = args[["users"]],
+    n = min(as.integer(args[["n"]]), 3200),
+    max_id = args[["max_id"]],
+    home = isTRUE(args[["home"]]),
+    parse = isFALSE(args[["no-parse"]]),
+    check = TRUE,
+    token = args$token,
+    include_rts = isTRUE(args[["include-rts"]])
+  )
+
+  tweets <- tweets[!duplicated(tweets$status_id), ]
+  tweets <- tweets[order(tweets$status_id), ]
+
+  log_info("Gathered {nrow(tweets)} tweets from {length(args$users)} users")
+  if (args$backup) backup_tweets(args$file, backup_dir = args[["backup-dir"]])
+  tweets <- save_tweets(tweets, args$file)
+
+  log_info("Total of {nrow(tweets)} tweets in {args$file}")
 }
 
 
