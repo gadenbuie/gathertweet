@@ -7,7 +7,7 @@ output: github_document
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  cache = TRUE,
+  cache = FALSE,
   comment = "",
   prompt = TRUE,
   fig.path = "man/figures/README-",

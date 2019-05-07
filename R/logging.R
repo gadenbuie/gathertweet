@@ -5,6 +5,8 @@
   futile.logger::flog.layout(gathertweet_layout, name = "gathertweet")
 }
 
+collapse <- function(..., sep = ", ") paste(..., collapse = sep)
+
 #' @title Logging functions
 #' @export
 logger <- function(..., level = "info", envir = parent.frame()) {

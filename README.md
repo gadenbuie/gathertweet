@@ -85,50 +85,49 @@ Get 100 \#rstats tweets
 
 ``` bash
 > gathertweet search --n 100 --quiet "#rstats"
-[2019-05-04 14:52:15] [INFO] ---- gathertweet search start ----
-[2019-05-04 14:52:15] [INFO] Searching for "#rstats"
-[2019-05-04 14:52:16] [INFO] Gathered 100 tweets
-[2019-05-04 14:52:16] [INFO] Total of 100 tweets in tweets.rds
-[2019-05-04 14:52:16] [INFO] ---- gathertweet search complete ----
+INFO [2019-05-06 21:56:27] ---- gathertweet search start ----
+INFO [2019-05-06 21:56:27] Searching for "#rstats"
+INFO [2019-05-06 21:56:28] Gathered 98 tweets
+INFO [2019-05-06 21:56:28] Total of 98 tweets in tweets.rds
+INFO [2019-05-06 21:56:28] ---- gathertweet search complete ----
 ```
 
 Get more tweets, automatically starting from end of the last search
 
 ``` bash
 > gathertweet search --n 100 --quiet "#rstats"
-[2019-05-04 14:53:17] [INFO] ---- gathertweet search start ----
-[2019-05-04 14:53:17] [INFO] Searching for "#rstats"
-[2019-05-04 14:53:17] [INFO] Tweets from 1124748486971359232
-[2019-05-04 14:53:17] [INFO] Gathered 1 tweets
-[2019-05-04 14:53:17] [INFO] Total of 100 tweets in tweets.rds
-[2019-05-04 14:53:17] [INFO] ---- gathertweet search complete ----
+INFO [2019-05-06 21:57:29] ---- gathertweet search start ----
+INFO [2019-05-06 21:57:29] Searching for "#rstats"
+INFO [2019-05-06 21:57:29] Tweets from 1125579895403352064
+INFO [2019-05-06 21:57:29] No new tweets.
 ```
 
 Update the stored data about those \#rstats tweets
 
 ``` bash
 > gathertweet update
-[2019-05-04 14:53:18] [INFO] ---- gathertweet update start ----
-[2019-05-04 14:53:18] [INFO] Updating tweets in tweets.rds
-[2019-05-04 14:53:18] [INFO] Getting 100 tweets
-[2019-05-04 14:53:19] [INFO] ---- gathertweet update complete ----
+INFO [2019-05-06 21:57:30] ---- gathertweet update start ----
+INFO [2019-05-06 21:57:30] Updating tweets in tweets.rds
+INFO [2019-05-06 21:57:30] Getting 98 tweets
+INFO [2019-05-06 21:57:31] ---- gathertweet update complete ----
 ```
 
 ``` bash
 > ls -lh
 total 40K
--rw-rw-r-- 1 garrick garrick 39K May  4 14:53 tweets.rds
+-rw-rw-r-- 1 garrick garrick 39K May  6 21:57 tweets.rds
 ```
 
 Gather user timelines
 
 ``` bash
 > gathertweet timeline hadleywickham jennybryan dataandme
-[2019-05-04 21:11:54] [INFO] ---- gathertweet timeline start ----
-[2019-05-04 21:11:54] [INFO] Gathering tweets by hadleywickham, jennybryan, dataandme
-[2019-05-04 21:12:23] [INFO] Gathered 7368 tweets from 3 users
-[2019-05-04 21:12:23] [INFO] Total of 7368 tweets in tweets.rds
-[2019-05-04 21:12:23] [INFO] ---- gathertweet timeline complete ----
+INFO [2019-05-06 21:57:32] ---- gathertweet timeline start ----
+INFO [2019-05-06 21:57:32] Gathering tweets by hadleywickham, jennybryan, dataandme
+WARN [2019-05-06 21:57:32] Twitter API for timelines returns a maximum of 3200 tweets per user
+INFO [2019-05-06 21:58:01] Gathered 7427 tweets from 3 users
+INFO [2019-05-06 21:58:02] Total of 7524 tweets in tweets.rds
+INFO [2019-05-06 21:58:02] ---- gathertweet timeline complete ----
 ```
 
 ### Schedule tweet gathering using cron
@@ -157,52 +156,58 @@ crontab -e
     Usage:
       gathertweet search [--file=<file>] [options] [--] <terms>...
       gathertweet timeline [options] [--] <users>...
-      gathertweet update [--file=<file> --token=<token> --backup --backup-dir=<dir> --polite --debug-args]
+      gathertweet update [--file=<file> --and-simplify --polite --debug-args --token=<token> --backup --backup-dir=<dir>]
       gathertweet simplify [--file=<file> --output=<output> --debug-args --polite] [<fields>...]
     
-    Arguments
+    Options:
+      -h --help             Show this screen.
+      --file <file>         Name of RDS file where tweets are stored
+                            [default: tweets.rds]
+      --no-parse            Disable parsing of the results
+      --token <token>       See {rtweet} for more information
+      --retryonratelimit    Wait and retry when rate limited (only relevant when n
+                            exceeds 18000 tweets)
+      --quiet               Disable printing of {rtweet} processing messages
+      --polite              Only allow one process (search|update) to run at a time
+      --backup              Create a backup of existing tweet file
+      --backup-dir <dir>    Location for backups [default: backups]
+      --debug-args          Debug input arguments
+      --and-simplify        Create additional simplified tweet set.
+                            Run `gathertweet simplify` manually for more control.
+    search:
       <terms>  Search terms. Individual search terms are queried separately,
                but duplicated tweets are removed from the stored results.
                Each search term counts against the 15 minute rate limit of 180
                searches, which can be avoided by manually joining search terms
-               into a single query. WARNING: Wrap queries with spaces in
-               'single quotes': double quotes are allowed inside single quotes only.
+               into a single query. NOTE: Wrap queries with spaces in
+               'single quotes': only use double quotes within single quotes.
+      --type <type>         Type of search results: "recent", "mixed", or "popular"
+                            [default: recent]
+      --geocode <geocode>   Geographical limiter of the template
+                            "latitude,longitude,radius"
+      --since_id <since_id> Return results with an ID greather than (newer than) or
+                            equal to since_id, automatically extracted from the
+                            existing tweets <file>, if it exists, and ignored when
+                            <max_id> is set. Use "none" for all available tweets,
+                            or "last" for the maximum seen status_id in existing
+                            tweets. [default: last]
     
-      <fields>  Tweet fields that should be included. Default value will include
+    search and timeline:
+      -n, --n <n>        Number of tweets to return [default: 18000]
+      --include_rts      Logical indicating whether retweets should be included
+                         (default is to exclude RTs)
+      --max_id <max_id>  Return tweets with an ID less (older) than or equal to
+    
+    timeline:
+      <users>  A list of users as user names, IDs, or a mixture of both,
+               separated by spaces.
+      --home   If included, returns home-timeline instead of user-timeline.
+    
+    simplify:
+      <fields>  Tweet fields that should be included. By default includes:
                 `status_id`, `created_at`, `user_id`, `screen_name`, `text`,
                 `favorite_count`, `retweet_count`, `is_quote`, `hashtags`,
                 `mentions_screen_name`, `profile_url`, `profile_image_url`,
                 `media_url`, `urls_url`, `urls_expanded_url`.
-    
-    Options:
-      -h --help             Show this screen.
-      --file <file>         Name of RDS file where tweets are stored [default: tweets.rds]
-      --no-parse            Disable parsing of the results
-      --token <token>       See {rtweet} for more information
-      --retryonratelimit    Wait and retry when rate limited (only relevant when n exceeds 18000 tweets)
-      --quiet               Disable printing of {rtweet} processing/retrieval messages
-      --polite              Only allow one process (search|update) to run at a time
-      --backup              Create a backup of existing tweet file before writing any new files
-      --backup-dir <dir>    Location for backups, use "" for current directory. [default: backups]
-      --debug-args          Print values of the arguments only
-      --and-simplify        Create additional simplified tweet set with default values.
-                            Run `gathertweet simplify` manually for more control.
-    
-    search and timeline:
-      -n, --n <n>           Number of tweets to return [default: 18000]
-      --include_rts         Logical indicating whether retweets should be included
-      --max_id <max_id>     Return results with an ID less than (older than) or equal to max_id
-    
-    search:
-      --type <type>         Type of search results: "recent", "mixed", or "popular". [default: recent]
-      --geocode <geocode>   Geographical limiter of the template "latitude,longitude,radius"
-      --since_id <since_id> Return results with an ID greather than (newer than) or equal to since_id,
-                            automatically extracted from the existing tweets <file>, if it exists, and
-                            ignored when <max_id> is set. Use "none" for all available tweets,
-                            or "last" for the maximum seen status_id in existing tweets. [default: last]
-    
-    timeline:
-      --home                If included, returns home-timeline instead of user-timeline.
-    
-    simplify:
-      --output <output>     Output file, default is input file with `_simplified` appended to name.
+      --output <output>  Output file, default is input file with `_simplified`
+                         appended to name.
