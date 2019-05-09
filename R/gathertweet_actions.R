@@ -150,3 +150,5 @@ gathertweet_simplify <- function(
   log_info("Saving simplified tweets to {output}")
   save_tweets(tweets_simplified, output)
 }
+
+isFALSE <- function(x) is.logical(x) && length(x) == 1L && !is.na(x) && !x
