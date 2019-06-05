@@ -41,19 +41,7 @@ gathertweet_search <- function(
     saveRDS(tweets, file)
   } else {
     tweets <- dplyr::bind_rows(tweets)
-
-    if (nrow(tweets) == 0) {
-      log_info("No new tweets.")
-      exit()
-    }
-
-    tweets <- tweets[!duplicated(tweets$status_id), ]
-    tweets <- tweets[order(tweets$status_id), ]
-
-    log_info("Gathered {nrow(tweets)} tweets")
-    tweets <- save_tweets(tweets, file)
-
-    log_info("Total of {nrow(tweets)} tweets in {file}")
+    save_tweets_or_exit(tweets, file)
   }
 
   tweets
@@ -107,17 +95,7 @@ gathertweet_timeline <- function(
     include_rts = isTRUE(include_rts)
   )
 
-  if (!nrow(tweets)) {
-    log_fatal("No new tweets.")
-  }
-
-  tweets <- tweets[!duplicated(tweets$status_id), ]
-  tweets <- tweets[order(tweets$status_id), ]
-
-  log_info("Gathered {nrow(tweets)} tweets from {length(users)} users")
-  tweets <- save_tweets(tweets, file)
-
-  log_info("Total of {nrow(tweets)} tweets in {file}")
+  save_tweets_or_exit(tweets, file)
   tweets
 }
 
@@ -150,17 +128,7 @@ gathertweet_favorites <- function(
     token       = token
   )
 
-  if (!nrow(tweets)) {
-    log_fatal("No new tweets.")
-  }
-
-  tweets <- tweets[!duplicated(tweets$status_id), ]
-  tweets <- tweets[order(tweets$status_id), ]
-
-  log_info("Gathered {nrow(tweets)} tweets from {length(users)} users")
-  tweets <- save_tweets(tweets, file)
-
-  log_info("Total of {nrow(tweets)} tweets in {file}")
+  save_tweets_or_exit(tweets, file)
   tweets
 }
 
@@ -204,4 +172,20 @@ set_since_id <- function(since_id = NULL, max_id = NULL, file = NULL) {
   if (!is.null(since_id)) log_info("Tweets from {since_id}")
   if (!is.null(max_id)) log_info("Tweets up to {max_id}")
   since_id
+}
+
+
+save_tweets_or_exit <- function(tweets, file) {
+  if (nrow(tweets) == 0) {
+    log_info("---- No new tweets. ----")
+    exit()
+  }
+
+  tweets <- tweets[!duplicated(tweets$status_id), ]
+  tweets <- tweets[order(tweets$status_id), ]
+
+  log_info("Gathered {nrow(tweets)} tweets")
+  tweets <- save_tweets(tweets, file)
+
+  log_info("Total of {nrow(tweets)} tweets in {file}")
 }
