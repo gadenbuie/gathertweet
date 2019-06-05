@@ -17,15 +17,7 @@ gathertweet_search <- function(
 ) {
   log_info("Searching for \"{paste0(terms, collapse = '\", \"')}\"")
 
-  since_id <- if (is.null(max_id)) {
-    if (since_id == "last") {
-      last_seen_tweet(file = file)
-    } else if (since_id == "none") {
-      NULL
-    } else since_id
-  }
-  if (!is.null(since_id)) log_info("Tweets from {since_id}")
-  if (!is.null(max_id)) log_info("Tweets up to {max_id}")
+  since_id <- set_since_id(since_id, max_id, file)
 
   tweets <- lapply(
     terms,
@@ -43,8 +35,6 @@ gathertweet_search <- function(
       since_id         = since_id
     )
   )
-
-
 
   if (isTRUE(`no-parse`)) {
     log_info("Saving un-parsed tweets in {file}")
@@ -117,6 +107,53 @@ gathertweet_timeline <- function(
     include_rts = isTRUE(include_rts)
   )
 
+  if (!nrow(tweets)) {
+    log_fatal("No new tweets.")
+  }
+
+  tweets <- tweets[!duplicated(tweets$status_id), ]
+  tweets <- tweets[order(tweets$status_id), ]
+
+  log_info("Gathered {nrow(tweets)} tweets from {length(users)} users")
+  tweets <- save_tweets(tweets, file)
+
+  log_info("Total of {nrow(tweets)} tweets in {file}")
+  tweets
+}
+
+#' @export
+gathertweet_favorites <- function(
+  users,
+  file        = "tweets.rds",
+  n           = 3000,
+  max_id      = NULL,
+  since_id    = NULL,
+  `no-parse`  = FALSE,
+  token       = NULL,
+  ...
+) {
+  log_info("Gathering tweets favorited by {collapse(users)}")
+
+  since_id <- set_since_id(since_id, max_id, file)
+  n <- as.integer(n)
+  if (n > 3000) {
+    log_warn("Twitter API for favorites/list returns a maximum of 3000 tweets per user")
+    n <- 3000
+  }
+
+  tweets <- rtweet::get_favorites(
+    user        = users,
+    n           = n,
+    max_id      = max_id,
+    since_id    = since_id,
+    parse       = isFALSE(`no-parse`),
+    token       = token
+  )
+
+  if (!nrow(tweets)) {
+    log_fatal("No new tweets.")
+  }
+
   tweets <- tweets[!duplicated(tweets$status_id), ]
   tweets <- tweets[order(tweets$status_id), ]
 
@@ -152,3 +189,19 @@ gathertweet_simplify <- function(
 }
 
 isFALSE <- function(x) is.logical(x) && length(x) == 1L && !is.na(x) && !x
+
+set_since_id <- function(since_id = NULL, max_id = NULL, file = NULL) {
+  since_id <- if (is.null(max_id)) {
+    if (since_id == "last") {
+      if (is.null(file)) {
+        log_fatal("`file` must be provided for since_id = \"last\"")
+      }
+      last_seen_tweet(file = file)
+    } else if (since_id == "none") {
+      NULL
+    } else since_id
+  }
+  if (!is.null(since_id)) log_info("Tweets from {since_id}")
+  if (!is.null(max_id)) log_info("Tweets up to {max_id}")
+  since_id
+}

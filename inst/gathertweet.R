@@ -5,8 +5,9 @@
 
 Usage:
   gathertweet search [--file=<file>] [options] [--] <terms>...
-  gathertweet timeline [options] [--] <users>...
   gathertweet update [--file=<file> --and-simplify --polite --debug-args --token=<token> --backup --backup-dir=<dir>]
+  gathertweet timeline [options] [--] <users>...
+  gathertweet favorites [options] [--] <users>...
   gathertweet simplify [--file=<file> --output=<output> --debug-args --polite] [<fields>...]
 
 Options:
@@ -48,9 +49,11 @@ search and timeline:
                      (default is to exclude RTs)
   --max_id <max_id>  Return tweets with an ID less (older) than or equal to
 
-timeline:
+timeline and favorites:
   <users>  A list of users as user names, IDs, or a mixture of both,
            separated by spaces.
+
+timeline:
   --home   If included, returns home-timeline instead of user-timeline.
 
 simplify:
@@ -78,7 +81,7 @@ do_gathertweet <- function() {
   collapse <- function(..., sep = ", ") paste(..., collapse = sep)
 
   # Which action was called?
-  valid_actions <- c("search", "update", "simplify", "timeline")
+  valid_actions <- c("search", "update", "simplify", "timeline", "favorites")
   action <- names(Filter(isTRUE, args[valid_actions]))
   if (!length(action)) {
     log_fatal("Please specify a valid action: {collapse(valid_actions)}")
@@ -129,6 +132,15 @@ do_gathertweet <- function() {
     }
 
     do.call("gathertweet_timeline", args)
+
+    # Favorites ----
+  } else if (isTRUE(args$favorites)) {
+    if (!length(args$users)) {
+      stop("Please provide a list of users as user names, user IDs, ",
+           "or a mixture of both.")
+    }
+
+    do.call("gathertweet_favorites", args)
   }
 
 

@@ -2,6 +2,7 @@
 
 export("%>%")
 export(backup_tweets)
+export(gathertweet_favorites)
 export(gathertweet_search)
 export(gathertweet_simplify)
 export(gathertweet_timeline)
