@@ -1,6 +1,6 @@
 Package: gathertweet
 Title: Gather Tweets from the Command Line with rtweet
-Version: 0.0.1.9000
+Version: 0.0.1.9001
 Authors@R:
     person(given = "Garrick",
            family = "Aden-Buie",

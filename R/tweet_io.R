@@ -93,32 +93,33 @@ simplify_tweets <- function(
   if (length(.fields)) {
     tweets %>% dplyr::select(!!!.fields)
   } else {
-    dplyr::select(
-      tweets,
-      created_at,
-      status_id,
-      user_id,
-      screen_name,
-      text,
-      is_quote,
-      is_retweet,
-      favorite_count,
-      retweet_count,
-      hashtags,
-      profile_url,
-      profile_image_url,
-      urls_expanded_url,
-      mentions_screen_name,
-      media_url,
-      urls_url,
-      ext_media_url,
-      status_url,
-      dplyr::starts_with("reply_to_"),
-      quoted_status_id,
-      retweet_status_id,
-      quoted_status_id,
-      dplyr::starts_with("mentions_"),
+    tw_cols <- names(tweets)
+    keep_cols <- c(
+      "created_at",
+      "status_id",
+      "user_id",
+      "screen_name",
+      "text",
+      "is_quote",
+      "is_retweet",
+      "favorite_count",
+      "retweet_count",
+      "hashtags",
+      "profile_url",
+      "profile_image_url",
+      "urls_expanded_url",
+      "mentions_screen_name",
+      "media_url",
+      "urls_url",
+      "ext_media_url",
+      "status_url",
+      grep("^reply_to_", tw_cols, value = TRUE),
+      "quoted_status_id",
+      "retweet_status_id",
+      "quoted_status_id",
+      grep("^mentions_", tw_cols, value = TRUE)
     )
+    tweets[, intersect(tw_cols, keep_cols)]
   }
 }
 
