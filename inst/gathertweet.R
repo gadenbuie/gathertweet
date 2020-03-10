@@ -67,12 +67,12 @@ simplify:
 ' -> doc
 
 library(docopt)
-args <- docopt(doc, version = paste('gathertweet version', packageVersion("gathertweet")))
+opts <- docopt(doc, version = paste('gathertweet version', packageVersion("gathertweet")))
 exit <- function(value = 0) q(save = "no", value)
 
-if (args$`--debug-args`) {
-  str(args)
-  saveRDS(args, "args.rds")
+if (opts$`--debug-args`) {
+  str(opts)
+  saveRDS(opts, "args.rds")
   exit()
 }
 
@@ -82,21 +82,21 @@ do_gathertweet <- function() {
 
   # Which action was called?
   valid_actions <- c("search", "update", "simplify", "timeline", "favorites")
-  action <- names(Filter(isTRUE, args[valid_actions]))
+  action <- names(Filter(isTRUE, opts[valid_actions]))
   if (!length(action)) {
     log_fatal("Please specify a valid action: {collapse(valid_actions)}")
   }
 
-  if (args$polite) {
+  if (opts$polite) {
     lockfile <- paste0(
       ".gathertweet_",
-      digest::digest(args[c("file", "search", "update", "simplify")]),
+      digest::digest(opts[c("file", "search", "update", "simplify")]),
       ".lock"
     )
     lck <- filelock::lock(lockfile, exclusive = TRUE, timeout = 0)
     gathertweet:::stopifnot_locked(
       lck,
-      "Another gathertweet {action} process is currently running for {args$file}"
+      "Another gathertweet {action} process is currently running for {opts$file}"
     )
     on.exit({
       filelock::unlock(lck)
@@ -106,50 +106,50 @@ do_gathertweet <- function() {
 
   log_info("---- gathertweet {action} start ----")
 
-  if (isTRUE(args$backup)) {
-    backup_tweets(args$file, backup_dir = args[["backup-dir"]])
+  if (isTRUE(opts$backup)) {
+    backup_tweets(opts$file, backup_dir = opts[["backup-dir"]])
   }
 
   # Also simplify if --and-simplify flag is called
-  if (args[["--and-simplify"]]) args$simplify <- TRUE
+  if (opts[["--and-simplify"]]) opts$simplify <- TRUE
 
   tweets <-
     # Search ----
-  if (isTRUE(args$search)) {
+  if (isTRUE(opts$search)) {
 
-    do.call("gathertweet_search", args)
+    do.call("gathertweet_search", opts)
 
     # Update ----
-  } else if (isTRUE(args$update)) {
+  } else if (isTRUE(opts$update)) {
 
-    do.call("gathertweet_update", args)
+    do.call("gathertweet_update", opts)
 
     # Timeline ----
-  } else if (isTRUE(args$timeline)) {
-    if (!length(args$users)) {
+  } else if (isTRUE(opts$timeline)) {
+    if (!length(opts$users)) {
       stop("Please provide a list of users as user names, user IDs, ",
            "or a mixture of both.")
     }
 
-    do.call("gathertweet_timeline", args)
+    do.call("gathertweet_timeline", opts)
 
     # Favorites ----
-  } else if (isTRUE(args$favorites)) {
-    if (!length(args$users)) {
+  } else if (isTRUE(opts$favorites)) {
+    if (!length(opts$users)) {
       stop("Please provide a list of users as user names, user IDs, ",
            "or a mixture of both.")
     }
 
-    do.call("gathertweet_favorites", args)
+    do.call("gathertweet_favorites", opts)
   }
 
 
   # Simplify ----------------------------------------------------------------
-  if (isTRUE(args$simplify)) {
-    do.call("gathertweet_simplify", args)
+  if (isTRUE(opts$simplify)) {
+    do.call("gathertweet_simplify", opts)
   }
 
-  if (args$polite) {
+  if (opts$polite) {
     filelock::unlock(lck)
     unlink(lockfile)
   }
